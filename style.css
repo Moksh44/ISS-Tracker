@@ -1,0 +1,734 @@
+body {
+    font-family: sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 49px;
+}
+
+h1 {
+    margin-top: 0px;
+}
+
+/* NEW: Container for the map and fly button */
+.map-container {
+    width: 100%;
+    margin: 20px 0;
+}
+
+.content-wrapper {
+    width: 92%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Controls for Map appearence */
+#map {
+    height: 40vh;
+    border: 2px solid #333;
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 100%; 
+}
+
+/* --- Customize the Map Layers Button --- */
+.leaflet-control-layers-toggle {
+    width: 44px !important;
+    height: 44px !important;
+    background-size: 30px 30px !important; 
+    background-color: white;
+    border-radius: 8px; 
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: transform 0.2s;
+}
+
+.leaflet-control-layers-toggle:hover {
+    background-color: #f4f4f4;
+    transform: scale(1.1);
+}
+
+/* Dark Mode Support for the button */
+body.dark-mode .leaflet-control-layers-toggle {
+    background-color: #333;
+    filter: invert(1); 
+}
+
+/* NEW: Container for the 2x2 Grid (Base Style) */
+.info-box-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px;
+    width: 100%;
+    margin: 10px 0;
+}
+
+/* 1. Unified Styling for info boxes (FOR 2x2 GRID) */
+.info-box {
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    z-index: 1000;
+    font-family: sans-serif;
+    font-size: 13px;
+    overflow-wrap: break-word;
+}
+
+body.dark-mode .info-box {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Style for all paragraphs inside info boxes */
+#info-orbits p,
+.info-box p {
+    margin: 9px 0;
+}
+
+/* ===== LEGEND ===== */
+#map .legend {
+    padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1vw, 12px);
+    font-size: clamp(0.58rem, 1.1vw, 0.72rem);
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: clamp(1.1rem, 1.8vw, 1.4rem);
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+    color: #333;
+    margin-bottom: clamp(4px, 0.8vw, 8px);
+    margin-right: clamp(4px, 0.8vw, 8px);
+}
+
+#map .legend i {
+    width: clamp(8px, 1vw, 12px);
+    height: clamp(8px, 1vw, 12px);
+    float: left;
+    margin-right: clamp(3px, 0.5vw, 6px);
+    margin-top: 0.2rem;
+    opacity: 0.85;
+    border-radius: 2px;
+}
+
+body.dark-mode #map .legend {
+    background: rgba(20, 20, 20, 0.92);
+    color: #e0e0e0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 600px) {
+    #map .legend {
+        font-size: 0.58rem;
+        line-height: 1.1rem;
+        padding: 4px 6px;
+        margin-bottom: 4px;
+        margin-right: 4px;
+    }
+    #map .legend i {
+        width: 7px;
+        height: 7px;
+        margin-right: 3px;
+    }
+}
+
+
+/* ===== ZOOM BUTTONS ===== */
+.leaflet-control-zoom {
+    border: none !important;
+    box-shadow: none !important;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    width: clamp(28px, 3.5vw, 34px) !important;
+    height: clamp(28px, 3.5vw, 34px) !important;
+    line-height: clamp(28px, 3.5vw, 34px) !important;
+    font-size: clamp(14px, 1.8vw, 17px) !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    border: 1px solid rgba(0, 0, 0, 0.18) !important;
+    color: #1a1a1a !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    transition: background 0.2s, border-color 0.2s !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(0, 0, 0, 0.35) !important;
+}
+
+body.dark-mode .leaflet-control-zoom-in,
+body.dark-mode .leaflet-control-zoom-out {
+    background: rgba(20, 20, 20, 0.82) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
+}
+
+body.dark-mode .leaflet-control-zoom-in:hover,
+body.dark-mode .leaflet-control-zoom-out:hover {
+    background: rgba(50, 50, 50, 0.95) !important;
+    border-color: rgba(255, 255, 255, 0.45) !important;
+}
+
+@media (max-width: 600px) {
+    .leaflet-control-zoom-in,
+    .leaflet-control-zoom-out {
+        width: 28px !important;
+        height: 28px !important;
+        line-height: 28px !important;
+        font-size: 14px !important;
+    }
+    .leaflet-control-zoom {
+        gap: 3px;
+    }
+}
+
+/* Light Mode Background */
+body.light-mode {
+    background-color: #f0f0f0;
+  background-image: url('background-light-image.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #000000;
+}
+
+/* Dark Mode Background */
+body.dark-mode {
+    background-color: #1a1a1a;
+  background-image: url('background-dark-image.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #e0e0e0;
+}
+
+/* --- START: Spot the Station Table Styles --- */
+
+#spot-station-section {
+    width: 100%;
+    margin: 2rem auto 0 auto;
+    background: rgba(10, 12, 20, 0.78);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    color: #e0e0e0;
+    overflow: hidden;
+    padding-bottom: 20px;
+}
+
+/* This is the "table caption" or header */
+
+#spot-station-section h2 {
+    font-size: 1.2em;
+    padding: 14px 16px;
+    background: rgba(0, 0, 0, 0.4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin: 0;
+    color: #ffffff;
+    letter-spacing: 0.05em;
+    border-radius: 12px 12px 0 0;
+}
+
+/* --- UPDATED INPUT AREA & GAPS --- */
+
+.input-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px 20px 15px 20px; 
+    gap: 18px;
+}
+
+.input-area input[type="text"] {
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    font-size: 1em;
+    color: #ffffff;
+    box-sizing: border-box;
+    width: 85%;
+    max-width: 500px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-area input[type="text"]::placeholder {
+    color: rgba(255, 255, 255, 0.28);
+}
+
+.input-area input[type="text"]:focus {
+    border-color: #4A90E2;
+    box-shadow: 0 0 10px rgba(74, 144, 226, 0.35);
+    outline: none;
+}
+
+/* --- THE AUTOFILL BUG FIX --- */
+.input-area input[type="text"]:-webkit-autofill,
+.input-area input[type="text"]:-webkit-autofill:hover, 
+.input-area input[type="text"]:-webkit-autofill:focus, 
+.input-area input[type="text"]:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px #0b0d14 inset !important;
+    -webkit-text-fill-color: #ffffff !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* --- NEW BUTTON GROUP --- */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 15px; 
+}
+
+#passes-results {
+    margin-top: 5px;
+}
+
+#find-passes-btn, #use-location-btn {
+    padding: 9px 12px;
+    font-size: 0.9em;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 6px;
+    color: #e0e0e0;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+#find-passes-btn:hover, #use-location-btn:hover {
+    background: rgba(74, 144, 226, 0.2);
+    border-color: #4A90E2;
+    color: #ffffff;
+}
+
+/* --- START: Spot the Station Glow Animation --- */
+
+#spot-station-section.is-glowing {
+    animation: glow-light 1.5s ease-in-out infinite alternate;
+}
+
+/* We define a different animation name for dark mode */
+body.dark-mode #spot-station-section.is-glowing {
+    animation-name: glow-dark;
+}
+
+@keyframes glow-hud {
+    from { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 6px rgba(74,144,226,0.3); }
+    to   { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 22px 6px rgba(74,144,226,0.65); }
+}
+
+/* --- END: Spot the Station Glow Animation --- */
+
+/* --- START: New Pass Table Styles (Fluid) --- */
+
+.pass-table-new {
+    width: 95%;
+    margin: 0 auto 1.5rem auto;
+    border-collapse: collapse;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.9em;
+    color: #e0e0e0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.pass-table-new caption {
+    background: rgba(0, 0, 0, 0.28);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1em;
+    padding: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    caption-side: top;
+    text-align: center;
+    letter-spacing: 0.02em;
+}
+
+.pass-table-new th, .pass-table-new td {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 10px 12px;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.pass-table-new thead th {
+    background: rgba(0, 0, 0, 0.2);
+    color: #8a9bb0;
+    text-transform: uppercase;
+    font-size: 0.78em;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    text-align: center;
+}
+
+.pass-table-new thead th:first-child {
+    background: transparent;
+    border: none;
+}
+
+.pass-table-new tbody td:first-child {
+    background: rgba(0, 0, 0, 0.15);
+    color: #ffffff;
+    font-weight: 600;
+    width: 30%;
+    border-right: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.pass-table-new td:nth-child(2),
+.pass-table-new td:nth-child(3) {
+    text-align: center;
+    width: 35%;
+}
+
+.pass-table-new tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* --- END: New Pass Table Styles --- */
+
+.passes-location-heading {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #ffffff;
+    text-align: center;
+    margin: 15px 2.5% 25px; 
+    letter-spacing: 0.03em;
+}
+
+.passes-empty-msg {
+    color: rgba(255, 255, 255, 0.45);
+    text-align: center;
+    padding: 20px 10px;
+    font-size: 0.9em;
+}
+
+/* --- START: Fluid Header Styles (Mobile-First) --- */
+
+/* This is the new flex container for the whole header */
+.header-controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+}
+
+/* Style for the H1 title inside the header */
+.header-controls h1 {
+    width: 100%;
+    text-align: center;
+    margin: 8px 0 5px 0;
+    font-size: 1.5em;
+}
+
+/* Style the results tables in dark mode */
+body.dark-mode .pass-table-new {
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+    border-color: #555;
+}
+
+/* Style the Date Caption in dark mode */
+body.dark-mode .pass-table-new caption {
+    background-color: #3a3a3a;
+    border-bottom-color: #555;
+    color: #f1f3f4;
+}
+
+/* Style table cells (general) in dark mode */
+body.dark-mode .pass-table-new th,
+body.dark-mode .pass-table-new td {
+    border-color: #444;
+    color: #e0e0e0;
+}
+
+/* Style header row cells in dark mode */
+body.dark-mode .pass-table-new thead th {
+    background-color: #303030;
+    color: #ccc;
+}
+
+/* Style the empty header cell (keep it consistent) */
+body.dark-mode .pass-table-new thead th:first-child {
+     background-color: transparent;
+     border: none;
+}
+
+/* Style the first column (Event names) in dark mode */
+body.dark-mode .pass-table-new tbody td:first-child {
+    background-color: #303030;
+    color: #f1f3f4;
+}
+
+/* Ensure duration text is readable */
+body.dark-mode .pass-table-new tbody tr:last-child td:nth-child(2) {
+     color: #ccc;
+     font-weight: bold;
+}
+
+
+.leaflet-marker-icon {
+    transition: transform 2s linear;
+}
+
+/* ===== MAP TOOLBAR BOXES ===== */
+#map-toolbar {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: row;
+    gap: 6px;
+    z-index: 1000;
+}
+
+.toolbar-box {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+body.light-mode .toolbar-box {
+    background: rgba(255, 255, 255, 0.82);
+    border-color: rgba(0, 0, 0, 0.13);
+    color: #1a1a1a;
+}
+
+body.light-mode .toolbar-box:hover {
+    background: rgba(255, 255, 255, 0.97);
+    border-color: rgba(0, 0, 0, 0.28);
+}
+
+/* LIGHT MODE ACTIVE: Crisp Black Border */
+body.light-mode .toolbar-box.active {
+    border: 2px solid #000000;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
+    color: #000000;
+}
+
+/* DARK MODE BUTTONS: Glassy Finish */
+body.dark-mode .toolbar-box {
+    background-color: rgba(40, 40, 40, 0.4); 
+    backdrop-filter: blur(8px);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e0e0e0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.4);
+}
+
+body.dark-mode .toolbar-box:hover {
+    background-color: rgba(60, 60, 60, 0.6);
+}
+
+/* DARK MODE ACTIVE: White border and icon */
+body.dark-mode .toolbar-box.active {
+    border: 2px solid #ffffff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.toolbar-box .icon {
+    width: 17px;
+    height: 17px;
+    stroke: currentColor;
+    fill: none;
+    pointer-events: none;
+}
+
+/* Tooltip */
+.toolbar-box .tb-tooltip {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(-4px);
+    background: rgba(18, 18, 18, 0.93);
+    color: #f0f0f0;
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 9999;
+    width: max-content; 
+    max-width: 180px;
+    white-space: normal;
+    text-align: center;
+    line-height: 1.3;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+/* Tooltip Hover State */
+.toolbar-box:hover .tb-tooltip {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toolbar-item-wrapper {
+    position: relative; 
+    display: inline-block; 
+}
+
+.target-crosshair-svg {
+    background: transparent;
+    border: none;
+}
+
+/* ===== END MAP TOOLBAR BOXES ===== */
+
+/* The Compass Needle Rocket Rotation */
+.rocket-icon {
+    transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
+    transform: rotate(0deg);
+    position: relative;
+    z-index: 2;
+}
+
+/* Active State: Point straight up */
+.toolbar-box.active .rocket-icon {
+    transform: rotate(-45deg); 
+}
+
+/* The Falling Stars / Warp Illusion */
+.toolbar-box.active#fly-mode-toggle::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: radial-gradient(currentColor 1px, transparent 1px),
+    radial-gradient(currentColor 1.5px, transparent 1.5px);
+    background-size: 12px 12px, 20px 20px;
+    background-position: 0 0, 10px 10px;
+    opacity: 0.4;
+    animation: stars-fly-down 0.4s linear infinite;
+    z-index: 1;
+}
+
+/* Animates the Y-axis downwards to make the rocket look like it's flying UP */
+@keyframes stars-fly-down {
+    0% { background-position: 0 0, 10px 10px; }
+    100% { background-position: 0 12px, 10px 30px; } 
+}
+
+/* --- CUSTOM LAYERS POPOVER MENU --- */
+.toolbar-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    padding: 6px;
+    z-index: 2000;
+    min-width: 120px;
+}
+
+.toolbar-popover.hidden {
+    display: none;
+}
+
+.popover-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    text-align: left;
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: 4px;
+    color: #333;
+    transition: background 0.2s;
+}
+
+.popover-btn:hover { background: #f0f0f0; }
+.popover-btn.active { 
+    font-weight: bold; 
+    color: #000000; 
+    background-color: #f0f0f0;
+    border-left: 3px solid #000000;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Dark Mode Popover - Glassy Finish */
+body.dark-mode .toolbar-popover {
+    background: rgba(30, 30, 30, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+body.dark-mode .popover-btn { color: #e0e0e0; }
+body.dark-mode .popover-btn:hover { background: rgba(255, 255, 255, 0.1); }
+body.dark-mode .popover-btn.active { 
+    color: #ffffff; 
+    background-color: rgba(18, 17, 17, 0.15); 
+    border-left: 3px solid #ffffff;
+}
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+    width: clamp(28px, 3.5vw, 36px) !important;
+    height: clamp(28px, 3.5vw, 36px) !important;
+    line-height: clamp(28px, 3.5vw, 36px) !important;
+    font-size: clamp(14px, 1.8vw, 18px) !important;
+    font-weight: 700 !important;
+    border-radius: 6px !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    background: rgba(20, 20, 20, 0.72) !important;
+    backdrop-filter: blur(8px) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-decoration: none !important;
+    transition: background 0.2s, border-color 0.2s !important;
+}
+
+.leaflet-control-zoom-in:hover,
+.leaflet-control-zoom-out:hover {
+    background: rgba(50, 50, 50, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.45) !important;
+    color: #ffffff !important;
+}
+
+/* Light mode zoom buttons */
+body.light-mode .leaflet-control-zoom-in,
+body.light-mode .leaflet-control-zoom-out {
+    background: rgba(255, 255, 255, 0.88) !important;
+    border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    color: #1a1a1a !important;
+}
+
+body.light-mode .leaflet-control-zoom-in:hover,
+body.light-mode .leaflet-control-zoom-out:hover {
+    background: rgba(255, 255, 255, 1) !important;
+    border-color: rgba(0, 0, 0, 0.35) !important;
+}

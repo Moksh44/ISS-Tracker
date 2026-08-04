@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISS Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="header-controls">
+        
+        <!--Dark Mode Toggle Button-->
+        <div class="toolbar-item-wrapper">
+            <button id="dark-mode-toggle" class="toolbar-box" aria-label="Switch Theme">
+            <svg id="icon-sun" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="5"/>
+                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42 M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+            </svg>
+            <svg id="icon-moon" class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 style="display:none;">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+            <span class="tb-tooltip" id="theme-tooltip">Switch theme to dark</span>
+        </button>
+        </div>
+
+        <!--Pin Mode Button-->
+        <div class="toolbar-item-wrapper">
+            <button id="pin-mode-toggle" class="toolbar-box" aria-label="Drop Pin">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span class="tb-tooltip" id="pin-tooltip">Click on map to know arrival time</span>
+        </button>
+        </div>
+        
+        <!--Map Layers Toggle Button-->
+        <div class="toolbar-item-wrapper">
+            <button id="layers-toggle" class="toolbar-box" aria-label="Map Layers">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                </svg>
+                <span class="tb-tooltip">Map Layers</span>
+            </button>
+            
+            <div id="layers-popover" class="toolbar-popover hidden">
+                <button class="popover-btn active" data-layer="Standard Map">Street Map</button>
+                <button class="popover-btn" data-layer="Satellite View">Satellite</button>
+                <button class="popover-btn" data-layer="Dark Space Mode">Dark Map</button>
+                <button class="popover-btn" data-layer="Nasa Night Lights">Night Map</button>
+            </div>
+        </div>
+        
+        <!--Overlays Toggle Button-->
+        <div class="toolbar-item-wrapper">
+            <button id="overlays-toggle" class="toolbar-box" aria-label="Toggle Overlays">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                <span class="tb-tooltip">Toggle Overlays</span>
+            </button>
+            
+            <div id="overlays-popover" class="toolbar-popover hidden">
+                <button class="popover-btn active" data-overlay="path">Orbit Path</button>
+                <button class="popover-btn active" data-overlay="footprint">Footprint</button>
+                <button class="popover-btn" data-overlay="legend">Legend</button>
+                <button class="popover-btn active" data-overlay="autocenter">Auto-Center</button>
+                <button class="popover-btn" data-overlay="crosshair">Target Crosshair</button>
+            </div>
+        </div>
+
+        <!--Fly Mode Button-->
+        <div class="toolbar-item-wrapper">
+            <button id="fly-mode-toggle" class="toolbar-box" aria-label="Fly Mode">
+                <span class="rocket-icon" style="font-size: 1.1rem; display: inline-block;">🚀</span>
+                <span class="tb-tooltip">Fly Mode</span>
+            </button>
+        </div>
+
+        <!--Main Title-->
+        <h1>International Space Station Tracker</h1>
+
+    </div>
+
+    <div class="content-wrapper">
+
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <div class="info-box-container">
+     
+            <div id="info-position" class="info-box"> 
+                <h3>Position</h3>
+                <p><strong>Latitude:</strong> <span id="lat"></span></p>
+                <p><strong>Longitude:</strong> <span id="lon"></span></p>
+                <p><strong>Altitude:</strong> <span id="altitude"></span> km</p>
+            </div>
+
+            <div id="info-movement" class="info-box">
+                <h3>Movement</h3>
+                <p><strong>Velocity:</strong> <span id="vel"></span> km/h</p> 
+                <p><strong>Vel/secs:</strong> <span id="velpersec"></span> km/s</p>
+            </div>
+
+            <div id="info-location" class="info-box">
+                <h3>Location</h3>
+                <p><strong>Country:</strong> <span id="country">Loading...</span></p>
+                <p><strong>Nearest:</strong> <span id="nearest-place">Loading...</span></p>
+                <p><strong>Visibility:</strong> <span id="visibility"></span></p>
+            </div>
+
+            <div id="info-time" class="info-box">
+                <h3>Time & Zone</h3>
+                <p><strong>ISS Time (UTC):</strong> <span id="utc-time">--:--:--</span></p>
+                <p><strong>Local Time:</strong> <span id="local-time">Loading...</span></p>
+                <p><strong>Time Zone:</strong> <span id="timezone">Loading...</span></p>
+            </div>
+
+            <div id="info-celestial" class="info-box">
+                <h3>Celestial</h3>
+                <p><strong>Right Ascension:</strong> <span id="ra">--</span> </p>
+                <p><strong>Declination:</strong> <span id="dec">--</span></p>
+                <p><strong>Constellation:</strong> <span id="constellation">Loading...</span></p>
+            </div>
+
+            <div id="info-orbits" class="info-box">
+                <h3>Orbit</h3>
+                <p><strong>Current Orbit:</strong> <span id="current-orbit">-</span></p>
+                <p><strong>Orbit Period:</strong> <span id="orbit-period">-</span> mins</p>
+                <p><strong>Orbits Today:</strong> <span id="orbits-today">-</span></p>
+            </div>
+        </div>
+
+
+        <div id="spot-station-section">
+            <h2>Spot the Station</h2>
+            <div class="input-area">
+                <input type="text" id="spot-location" placeholder="Search for Passes" autocomplete="off">
+                <div class="button-group">
+                    <button id="find-passes-btn">Find Visible Passes</button>
+                    <button id="use-location-btn">Use My Current Location</button>
+                </div>
+            </div>
+            <div id="passes-results">
+                <p>Enter a location above to see upcoming visible passes.</p>
+            </div>
+            <div id="spot-error-message" style="color: red; margin-top: 10px;"></div>
+        </div>
+    </div>
+
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- NEW: Add the satellite.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/satellite.js/4.0.0/satellite.min.js"></script>
+    <script src="https://unpkg.com/@joergdietrich/leaflet.terminator/L.Terminator.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
