@@ -11,7 +11,10 @@ h1 {
     margin-top: 0px;
 }
 
-/* NEW: Container for the map and fly button */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
 .map-container {
     width: 100%;
     margin: 20px 0;
@@ -23,7 +26,6 @@ h1 {
     margin: 0 auto;
 }
 
-/* Controls for Map appearence */
 #map {
     height: 40vh;
     border: 2px solid #333;
@@ -33,7 +35,6 @@ h1 {
     width: 100%; 
 }
 
-/* --- Customize the Map Layers Button --- */
 .leaflet-control-layers-toggle {
     width: 44px !important;
     height: 44px !important;
@@ -49,13 +50,11 @@ h1 {
     transform: scale(1.1);
 }
 
-/* Dark Mode Support for the button */
 body.dark-mode .leaflet-control-layers-toggle {
     background-color: #333;
     filter: invert(1); 
 }
 
-/* NEW: Container for the 2x2 Grid (Base Style) */
 .info-box-container {
     display: grid;
     grid-template-columns: 1fr 1fr; 
@@ -64,7 +63,6 @@ body.dark-mode .leaflet-control-layers-toggle {
     margin: 10px 0;
 }
 
-/* 1. Unified Styling for info boxes (FOR 2x2 GRID) */
 .info-box {
     padding: 1rem;
     background: rgba(0, 0, 0, 0.7);
@@ -82,13 +80,11 @@ body.dark-mode .info-box {
     background: rgba(0, 0, 0, 0.7);
 }
 
-/* Style for all paragraphs inside info boxes */
 #info-orbits p,
 .info-box p {
     margin: 9px 0;
 }
 
-/* ===== LEGEND ===== */
 #map .legend {
     padding: clamp(4px, 0.8vw, 8px) clamp(6px, 1vw, 12px);
     font-size: clamp(0.58rem, 1.1vw, 0.72rem);
@@ -133,8 +129,6 @@ body.dark-mode #map .legend {
     }
 }
 
-
-/* ===== ZOOM BUTTONS ===== */
 .leaflet-control-zoom {
     border: none !important;
     box-shadow: none !important;
@@ -162,24 +156,12 @@ body.dark-mode #map .legend {
     transition: background 0.2s, border-color 0.2s !important;
 }
 
-.leaflet-control-zoom-in:hover,
-.leaflet-control-zoom-out:hover {
-    background: rgba(255, 255, 255, 1) !important;
-    border-color: rgba(0, 0, 0, 0.35) !important;
-}
-
 body.dark-mode .leaflet-control-zoom-in,
 body.dark-mode .leaflet-control-zoom-out {
     background: rgba(20, 20, 20, 0.82) !important;
     border: 1px solid rgba(255, 255, 255, 0.18) !important;
     color: rgba(255, 255, 255, 0.9) !important;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important;
-}
-
-body.dark-mode .leaflet-control-zoom-in:hover,
-body.dark-mode .leaflet-control-zoom-out:hover {
-    background: rgba(50, 50, 50, 0.95) !important;
-    border-color: rgba(255, 255, 255, 0.45) !important;
 }
 
 @media (max-width: 600px) {
@@ -195,7 +177,6 @@ body.dark-mode .leaflet-control-zoom-out:hover {
     }
 }
 
-/* Light Mode Background */
 body.light-mode {
     background-color: #f0f0f0;
   background-image: url('background-light-image.jpg');
@@ -206,7 +187,6 @@ body.light-mode {
   color: #000000;
 }
 
-/* Dark Mode Background */
 body.dark-mode {
     background-color: #1a1a1a;
   background-image: url('background-dark-image.jpg');
@@ -216,8 +196,6 @@ body.dark-mode {
   background-attachment: fixed;
   color: #e0e0e0;
 }
-
-/* --- START: Spot the Station Table Styles --- */
 
 #spot-station-section {
     width: 100%;
@@ -233,8 +211,6 @@ body.dark-mode {
     padding-bottom: 20px;
 }
 
-/* This is the "table caption" or header */
-
 #spot-station-section h2 {
     font-size: 1.2em;
     padding: 14px 16px;
@@ -245,8 +221,6 @@ body.dark-mode {
     letter-spacing: 0.05em;
     border-radius: 12px 12px 0 0;
 }
-
-/* --- UPDATED INPUT AREA & GAPS --- */
 
 .input-area {
     display: flex;
@@ -279,7 +253,6 @@ body.dark-mode {
     outline: none;
 }
 
-/* --- THE AUTOFILL BUG FIX --- */
 .input-area input[type="text"]:-webkit-autofill,
 .input-area input[type="text"]:-webkit-autofill:hover, 
 .input-area input[type="text"]:-webkit-autofill:focus, 
@@ -289,7 +262,6 @@ body.dark-mode {
     transition: background-color 5000s ease-in-out 0s;
 }
 
-/* --- NEW BUTTON GROUP --- */
 .button-group {
     display: flex;
     justify-content: center;
@@ -317,13 +289,10 @@ body.dark-mode {
     color: #ffffff;
 }
 
-/* --- START: Spot the Station Glow Animation --- */
-
 #spot-station-section.is-glowing {
     animation: glow-light 1.5s ease-in-out infinite alternate;
 }
 
-/* We define a different animation name for dark mode */
 body.dark-mode #spot-station-section.is-glowing {
     animation-name: glow-dark;
 }
@@ -332,10 +301,6 @@ body.dark-mode #spot-station-section.is-glowing {
     from { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 6px rgba(74,144,226,0.3); }
     to   { box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 22px 6px rgba(74,144,226,0.65); }
 }
-
-/* --- END: Spot the Station Glow Animation --- */
-
-/* --- START: New Pass Table Styles (Fluid) --- */
 
 .pass-table-new {
     width: 95%;
@@ -402,8 +367,6 @@ body.dark-mode #spot-station-section.is-glowing {
     border-bottom: none;
 }
 
-/* --- END: New Pass Table Styles --- */
-
 .passes-location-heading {
     font-size: 1.1em;
     font-weight: 600;
@@ -420,9 +383,6 @@ body.dark-mode #spot-station-section.is-glowing {
     font-size: 0.9em;
 }
 
-/* --- START: Fluid Header Styles (Mobile-First) --- */
-
-/* This is the new flex container for the whole header */
 .header-controls {
     display: flex;
     flex-wrap: wrap;
@@ -432,7 +392,6 @@ body.dark-mode #spot-station-section.is-glowing {
     gap: 10px;
 }
 
-/* Style for the H1 title inside the header */
 .header-controls h1 {
     width: 100%;
     text-align: center;
@@ -440,7 +399,6 @@ body.dark-mode #spot-station-section.is-glowing {
     font-size: 1.5em;
 }
 
-/* Style the results tables in dark mode */
 body.dark-mode .pass-table-new {
     background-color: #2a2a2a;
     color: #e0e0e0;
@@ -448,42 +406,36 @@ body.dark-mode .pass-table-new {
     border-color: #555;
 }
 
-/* Style the Date Caption in dark mode */
 body.dark-mode .pass-table-new caption {
     background-color: #3a3a3a;
     border-bottom-color: #555;
     color: #f1f3f4;
 }
 
-/* Style table cells (general) in dark mode */
 body.dark-mode .pass-table-new th,
 body.dark-mode .pass-table-new td {
     border-color: #444;
     color: #e0e0e0;
 }
 
-/* Style header row cells in dark mode */
 body.dark-mode .pass-table-new thead th {
     background-color: #303030;
     color: #ccc;
 }
 
-/* Style the empty header cell (keep it consistent) */
 body.dark-mode .pass-table-new thead th:first-child {
-     background-color: transparent;
-     border: none;
+    background-color: transparent;
+    border: none;
 }
 
-/* Style the first column (Event names) in dark mode */
 body.dark-mode .pass-table-new tbody td:first-child {
     background-color: #303030;
     color: #f1f3f4;
 }
 
-/* Ensure duration text is readable */
 body.dark-mode .pass-table-new tbody tr:last-child td:nth-child(2) {
-     color: #ccc;
-     font-weight: bold;
+    color: #ccc;
+    font-weight: bold;
 }
 
 
@@ -491,7 +443,6 @@ body.dark-mode .pass-table-new tbody tr:last-child td:nth-child(2) {
     transition: transform 2s linear;
 }
 
-/* ===== MAP TOOLBAR BOXES ===== */
 #map-toolbar {
     position: absolute;
     top: 10px;
@@ -521,19 +472,12 @@ body.light-mode .toolbar-box {
     color: #1a1a1a;
 }
 
-body.light-mode .toolbar-box:hover {
-    background: rgba(255, 255, 255, 0.97);
-    border-color: rgba(0, 0, 0, 0.28);
-}
-
-/* LIGHT MODE ACTIVE: Crisp Black Border */
 body.light-mode .toolbar-box.active {
     border: 2px solid #000000;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.15);
     color: #000000;
 }
 
-/* DARK MODE BUTTONS: Glassy Finish */
 body.dark-mode .toolbar-box {
     background-color: rgba(40, 40, 40, 0.4); 
     backdrop-filter: blur(8px);
@@ -542,11 +486,17 @@ body.dark-mode .toolbar-box {
     box-shadow: 0 4px 6px rgba(0,0,0,0.4);
 }
 
-body.dark-mode .toolbar-box:hover {
-    background-color: rgba(60, 60, 60, 0.6);
+@media (hover: hover) and (pointer: fine) {
+    body.light-mode .toolbar-box:hover {
+        background: rgba(255, 255, 255, 0.97);
+        border-color: rgba(0, 0, 0, 0.28);
+    }
+
+    body.dark-mode .toolbar-box:hover {
+        background-color: rgba(60, 60, 60, 0.6);
+    }
 }
 
-/* DARK MODE ACTIVE: White border and icon */
 body.dark-mode .toolbar-box.active {
     border: 2px solid #ffffff;
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
@@ -561,7 +511,6 @@ body.dark-mode .toolbar-box.active {
     pointer-events: none;
 }
 
-/* Tooltip */
 .toolbar-box .tb-tooltip {
     position: absolute;
     top: calc(100% + 8px);
@@ -583,10 +532,11 @@ body.dark-mode .toolbar-box.active {
     transition: opacity 0.2s, transform 0.2s;
 }
 
-/* Tooltip Hover State */
-.toolbar-box:hover .tb-tooltip {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
+@media (hover: hover) and (pointer: fine) {
+    .toolbar-box:hover .tb-tooltip {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
 }
 
 .toolbar-item-wrapper {
@@ -599,9 +549,6 @@ body.dark-mode .toolbar-box.active {
     border: none;
 }
 
-/* ===== END MAP TOOLBAR BOXES ===== */
-
-/* The Compass Needle Rocket Rotation */
 .rocket-icon {
     transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); 
     transform: rotate(0deg);
@@ -609,12 +556,10 @@ body.dark-mode .toolbar-box.active {
     z-index: 2;
 }
 
-/* Active State: Point straight up */
 .toolbar-box.active .rocket-icon {
     transform: rotate(-45deg); 
 }
 
-/* The Falling Stars / Warp Illusion */
 .toolbar-box.active#fly-mode-toggle::before {
     content: '';
     position: absolute;
@@ -628,13 +573,11 @@ body.dark-mode .toolbar-box.active {
     z-index: 1;
 }
 
-/* Animates the Y-axis downwards to make the rocket look like it's flying UP */
 @keyframes stars-fly-down {
     0% { background-position: 0 0, 10px 10px; }
     100% { background-position: 0 12px, 10px 30px; } 
 }
 
-/* --- CUSTOM LAYERS POPOVER MENU --- */
 .toolbar-popover {
     position: absolute;
     top: calc(100% + 8px);
@@ -676,7 +619,6 @@ body.dark-mode .toolbar-box.active {
     border-radius: 0 4px 4px 0;
 }
 
-/* Dark Mode Popover - Glassy Finish */
 body.dark-mode .toolbar-popover {
     background: rgba(30, 30, 30, 0.7);
     backdrop-filter: blur(10px);
@@ -712,23 +654,35 @@ body.dark-mode .popover-btn.active {
     transition: background 0.2s, border-color 0.2s !important;
 }
 
-.leaflet-control-zoom-in:hover,
-.leaflet-control-zoom-out:hover {
-    background: rgba(50, 50, 50, 0.9) !important;
-    border-color: rgba(255, 255, 255, 0.45) !important;
-    color: #ffffff !important;
+@media (hover: hover) and (pointer: fine) {
+    body.light-mode .leaflet-control-zoom-in:hover,
+    body.light-mode .leaflet-control-zoom-out:hover,
+    .leaflet-control-zoom-in:hover,
+    .leaflet-control-zoom-out:hover {
+        background: rgba(255, 255, 255, 1) !important;
+        border-color: rgba(0, 0, 0, 0.35) !important;
+    }
+
+    body.dark-mode .leaflet-control-zoom-in:hover,
+    body.dark-mode .leaflet-control-zoom-out:hover {
+        background: rgba(50, 50, 50, 0.95) !important;
+        border-color: rgba(255, 255, 255, 0.45) !important;
+        color: #ffffff !important;
+    }
 }
 
-/* Light mode zoom buttons */
+.toolbar-box .tb-tooltip.force-show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.leaflet-popup-close-button {
+    display: none !important;
+}
+
 body.light-mode .leaflet-control-zoom-in,
 body.light-mode .leaflet-control-zoom-out {
     background: rgba(255, 255, 255, 0.88) !important;
     border: 1px solid rgba(0, 0, 0, 0.15) !important;
     color: #1a1a1a !important;
-}
-
-body.light-mode .leaflet-control-zoom-in:hover,
-body.light-mode .leaflet-control-zoom-out:hover {
-    background: rgba(255, 255, 255, 1) !important;
-    border-color: rgba(0, 0, 0, 0.35) !important;
 }

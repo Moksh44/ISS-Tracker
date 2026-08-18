@@ -1,4 +1,4 @@
-// --- ADD THESE NEW GLOBALS ---
+// Global Variables
 let isPinModeActive = false;
 let pinMarker = null;
 let isAutoCenterDisabled = false;
@@ -6,7 +6,7 @@ let flyModeActive = false;
 let autoCenterManualoff = false;
 let satrec;
 
-// Initialize the map and set its view to a default location and zoom
+// Initialize the map
 const streetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; OpenStreetMap contributors',
     noWrap: true,
@@ -29,7 +29,6 @@ const nasaNightLights = L.tileLayer('https://gibs.earthdata.nasa.gov/wmts/epsg38
     bounds: L.latLngBounds([[-90, -180], [90, 180]])
 });
 
-// 2. Initialize the Map with a "Default" layer (Street Map)
 const map = L.map('map', {
     center: [0, 0],
     zoom: 2,
@@ -43,7 +42,6 @@ const map = L.map('map', {
 
 L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
-// 3. Create the "Base Maps" object for the menu
 const baseMaps = {
     "Standard Map": streetMap,
     "Satellite View": satelliteMap,
@@ -51,30 +49,17 @@ const baseMaps = {
     "Nasa Night Lights": nasaNightLights
 };
 
-// Define the max bounds for the entire world
-const southWest = L.latLng(-89.98155760646617, -180);
-const northEast = L.latLng(89.99346179538875, 180);
-const bounds = L.latLngBounds(southWest, northEast);
-
-// Set these bounds on the map
-map.setMaxBounds(bounds);
-
-// Optionally, keep the map from "bouncing" by forcing it inside bounds
-map.on('drag', function() {
-    map.panInsideBounds(bounds, { animate: false });
-});
-
-// Add the day/night terminator layer
+// Add the terminator layer
 const terminator = L.terminator({longitudeRange: 360 }).addTo(map);
 
-// Create a custom icon for the ISS marker
+// ISS icon
 const issIcon = L.icon({
     iconUrl: 'my-icon.png',
     iconSize: [50, 50],
     iconAnchor: [25, 25],
 });
 
-// Create crosshair icon
+// Crosshair icon
 const crosshairIcon = L.divIcon({
     className: 'target-crosshair',
     html: `<svg viewBox="0 0 100 100" width="30" height="30">
@@ -84,13 +69,11 @@ const crosshairIcon = L.divIcon({
             <line x1="60" y1="50" x2="100" y2="50" stroke="#dcdcdc" stroke-width="8"/>
            </svg>`,
     iconSize: [30, 30],
-    iconAnchor: [15, 17] // Centers the plus sign exactly on the coordinate
+    iconAnchor: [15, 17]
 });
 
-// Add a marker for the ISS
 const marker = L.marker([0, 0], { icon: issIcon }).addTo(map);
 
-// NEW: Add a variable for the footprint circle
 let footprintCircle = L.circle([0, 0], {
     radius: 0,
     color: '#4a83ec',
@@ -100,7 +83,6 @@ let footprintCircle = L.circle([0, 0], {
     interactive: false
 }).addTo(map);
 
-// Get references to the HTML elements for the info box
 const latSpan = document.getElementById('lat');
 const lonSpan = document.getElementById('lon');
 const velSpan = document.getElementById('vel');
@@ -148,7 +130,6 @@ const issApiUrl = `${API_BASE_URL}/api/telemetry`;
 const tleApiUrl = 'https://api.wheretheiss.at/v1/satellites/25544/tles?format=text';
 
 async function getISS() {
-    // 1. Declare fallback variables at the start
     let highLevelLocation = "—";
     let specificLocation = "—";
     let timezone = "N/A";
@@ -163,10 +144,9 @@ async function getISS() {
         }
         const issData = await issResponse.json();
         
-        // Check for valid data
         if (!issData || typeof issData.latitude !== 'number' || isNaN(issData.latitude)) {
              console.warn("Primary ISS data fetch failed or returned invalid coordinates.");
-             return; // Stop function if data is bad
+             return;
         }
         
         ({ latitude, longitude, velocity, visibility, footprint, altitude, ra, dec, constellation, orbit_period: orbitPeriod  } = issData);
@@ -176,7 +156,7 @@ async function getISS() {
         footprintCircle.setRadius(footprint * 500);
 
        if (flyModeActive) {
-            map.panTo([latitude, longitude], { animate: true, duration: 1.0, easeLinearity: 1 });
+            map.panTo([latitude, longitude], { animate: true, duration: 2.0, easeLinearity: 1 });
         }
         
         if (!isAutoCenterDisabled && !flyModeActive) {
@@ -192,15 +172,14 @@ async function getISS() {
         altSpan.textContent = altitude.toFixed(2);
         visibilitySpan.textContent = visibility;
 
-        // --- BOX 3: CELESTIAL UPDATES (The New Feature!) ---
+        // BOX 3: CELESTIAL UPDATES
         if (document.getElementById('ra')) {
             document.getElementById('ra').textContent = formatRA(ra);
             document.getElementById('dec').textContent = formatDec(dec);
             document.getElementById('constellation').textContent = constellation;
         }
 
-        // --- BOX 4: ORBITS UPDATES (Live Calculation) ---
-        // We calculate Total Orbits based on the LIVE period from the API
+        // BOX 4: ORBITS UPDATES
         const launchDate = new Date('1998-11-20T06:40:00Z');
         const now = new Date();
         const diffMs = now - launchDate;
@@ -208,7 +187,6 @@ async function getISS() {
         
         const currentOrbitNumber = Math.floor(diffMs / periodMs);
         
-        // Calculate "Orbits Today" logic
         const msSinceMidnight = (now.getUTCHours() * 3600 + now.getUTCMinutes() * 60 + now.getUTCSeconds()) * 1000;
         const orbitsSoFarToday = Math.floor(msSinceMidnight / periodMs);
         const totalOrbitsPerDay = Math.floor((24 * 60 * 60 * 1000) / periodMs);
@@ -218,23 +196,17 @@ async function getISS() {
         orbitPeriodSpan.textContent = orbitPeriod.toFixed(2);
         orbitsTodaySpan.textContent = `${orbitsSoFarToday} : ${remainingOrbits}`;
 
-
-        // 2. REVERSE GEOCODING (Using your new 100% Local API)
         try {
-            // This URL calls your local Flask server.
-            // When you deploy to Oracle, change this to your Oracle URL.
             const geoResponse = await fetch(`${API_BASE_URL}/api/location?lat=${latitude}&lon=${longitude}`);
             
             if (!geoResponse.ok) {
-                // If your API sends an error (like 400 or 500), this will catch it
                 throw new Error(`Custom Geocoding failed: ${geoResponse.status}`);
             }
             
             const geoData = await geoResponse.json();
 
-            // Update names directly from your API's response
             highLevelLocation = geoData.country;
-            specificLocation = geoData.nearest; // This will be the State, Country, or Ocean name
+            specificLocation = geoData.nearest;
             timezone = geoData.timezone || "N/A";
             localTime = geoData.local_time || "N/A";
             
@@ -247,7 +219,6 @@ async function getISS() {
         
         }
         
-        // 3. FINAL UPDATE of HTML (Always executes)
         countrySpan.textContent  = highLevelLocation;
         nearestPlaceSpan.textContent = specificLocation;
         document.getElementById('timezone').textContent = timezone;
@@ -256,7 +227,6 @@ async function getISS() {
 
     } catch (error) {
         console.error('Error fetching ISS data:', error);
-        // Fallback for primary data errors
         latSpan.textContent = "Error";
         lonSpan.textContent = "Error";
         countrySpan.textContent  = "Primary Data Error";
@@ -270,10 +240,9 @@ async function getISS() {
     }
 }
 
-// --- UPDATED: Function to fetch TLE and update orbit path ---
+// Function to fetch TLE and update orbit path
 async function updateOrbitPath() {
     try {
-        // Fetch the latest TLE data
         const response = await fetch(tleApiUrl);
         const tleData = await response.text();
         const tleLines = tleData.trim().split('\n');
@@ -283,16 +252,14 @@ async function updateOrbitPath() {
             return; 
         }
         
-        // The API returns the name on the first line, and the TLE on the next two
         const tleLine1 = tleLines[1];
         const tleLine2 = tleLines[2];
 
-        // Initialize the satellite record from the fresh TLE data
         satrec = satellite.twoline2satrec(tleLine1, tleLine2);
 
     } catch (error) {
         console.error('Error fetching TLE data:', error);
-        return; // Stop if we can't get the TLE
+        return;
     }
     
     const now = new Date();
@@ -319,7 +286,6 @@ async function updateOrbitPath() {
         pastPoints.push([satellite.radiansToDegrees(positionGd.latitude), satellite.radiansToDegrees(positionGd.longitude)]);
     }
     
-    // Clear old layers and add new ones
     pastPathLayer.clearLayers();
     futurePathLayer.clearLayers();
     
@@ -347,7 +313,6 @@ function splitPolylineOnDateLine(polyline, layerGroup) {
     layerGroup.addLayer(L.polyline(currentLine, polyline.options));
 }
 
-// --- NEW: Check if a point is near the orbit path ---
 function isPointNearOrbit(pointLat, pointLon, distanceKm) {
     if (!pastPathLayer || !futurePathLayer) return false;
 
@@ -355,7 +320,6 @@ function isPointNearOrbit(pointLat, pointLon, distanceKm) {
     
     let allPathPoints = [];
 
-    // Get coordinates from all polylines in the future layer
     futurePathLayer.eachLayer(layer => {
         if (typeof layer.getLatLngs === 'function') {
             layer.getLatLngs().forEach(latlng => {
@@ -375,7 +339,7 @@ function isPointNearOrbit(pointLat, pointLon, distanceKm) {
     return distanceToPath <= distanceKm;
 }
 
-// --- REBUILT: Calculate time until the ISS reaches a point ---
+// Calculate time until the ISS reaches a point
 function calculateTimeToNearest(targetLat, targetLon) {
     if (!satrec || !satrec.satnum) return "TLE Data Not Ready";
 
@@ -386,7 +350,7 @@ function calculateTimeToNearest(targetLat, targetLon) {
     let closestTime = null;
     let closestDistance = Infinity;
     let previousDistance = Infinity;
-    let risingCount = 0;     // how many steps distance has been increasing
+    let risingCount = 0;
     let currentTime = new Date(now.getTime());
 
     // Pass 1: Coarse scan with smart early exit
@@ -414,22 +378,20 @@ function calculateTimeToNearest(targetLat, targetLon) {
             if (distKm < closestDistance) {
                 closestDistance = distKm;
                 closestTime = new Date(currentTime.getTime());
-                risingCount = 0; // reset counter — still getting closer
+                risingCount = 0;
             } else if (closestDistance < 500) {
-                // Distance was close and is now growing — count consecutive rising steps
                 risingCount++;
                 if (risingCount >= 10) break;
             }
 
             previousDistance = distKm;
-        } catch(e) { /* skip */ }
+        } catch(e) {  }
 
         currentTime = new Date(currentTime.getTime() + timeStepMs);
     }
 
     if (!closestTime) return "Pass > 2hrs away";
 
-    // Pass 2: Fine scan ±2 minutes around closest window (1-second precision)
     const fineStart = new Date(closestTime.getTime() - 120000);
     const fineEnd   = new Date(closestTime.getTime() + 120000);
     currentTime = new Date(fineStart.getTime());
@@ -461,12 +423,11 @@ function calculateTimeToNearest(targetLat, targetLon) {
                 closestDistance = distKm;
                 finalTime = new Date(currentTime.getTime());
             }
-        } catch(e) { /* skip */ }
+        } catch(e) {  }
 
         currentTime = new Date(currentTime.getTime() + 1000);
     }
 
-    // Return result
     const timeDiffMs = finalTime.getTime() - now.getTime();
     const minutes = Math.floor(timeDiffMs / 60000);
 
@@ -488,9 +449,7 @@ updateTerminator();
 setInterval(updateOrbitPath, 300000);
 setInterval(updateTerminator, 60000);
 
-
-
-// --- DOM References ---
+// DOM References
 const spotLocationInput = document.getElementById('spot-location');
 const findPassesBtn = document.getElementById('find-passes-btn');
 const useLocationBtn = document.getElementById('use-location-btn');
@@ -498,56 +457,46 @@ const passesResultsDiv = document.getElementById('passes-results');
 const spotErrorDiv = document.getElementById('spot-error-message');
 const pinModeToggle = document.getElementById('pin-mode-toggle');
 
-// --- Helper Functions (Time and Direction Formatting) ---
-
-// Converts degrees to 16-point cardinal directions (N, NNE, NE, ...)
 function degreesToCardinal16(degrees) {
-  // Ensure degrees is a valid number before processing
-  if (typeof degrees !== 'number' || isNaN(degrees)) {
-      return '?'; // Return a placeholder if input is invalid
-  }
+
+    if (typeof degrees !== 'number' || isNaN(degrees)) {
+      return '?';
+    }
+    
   const directions = [
     'N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE',
     'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'
-  ];
+    ];
   const normalizedDegrees = (degrees % 360 + 360) % 360;
   const index = Math.floor((normalizedDegrees + 11.25) / 22.5) % 16;
   return directions[index];
 }
 
-// --- NEW TIME FORMATTING HELPERS ---
-
-// Helper 1: Formats a Date object into a UTC time string (e.g., "17:05 UTC")
 function formatUTCPassTime(date) {
-    // 'en-GB' helps ensure a 24-hour format
     const timeString = date.toLocaleTimeString('en-GB', {
         timeZone: 'UTC',
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
     });
-    return `${timeString} UTC`; // Formats as "17:05 UTC"
+    return `${timeString} UTC`;
 }
 
-// Helper 2: Calculates the countdown string (e.g., "15m 30s left")
 function formatCountdown(date) {
     const now = new Date();
     const timeDiffMs = date.getTime() - now.getTime();
     
     let seconds = Math.floor(timeDiffMs / 1000);
     const minutes = Math.floor(seconds / 60);
-    seconds = seconds % 60; // Get the remaining seconds
+    seconds = seconds % 60;
 
     if (minutes >= 60) {
         return "More than an hour left";
     }
     
-    // This ensures "0m 05s" instead of just "5s"
     return `${minutes}m ${String(seconds).padStart(2, '0')}s left`;
 }
-// -----------------------------------
 
-// NEW: Extract Date only (using API timezone)
 function formatLocalDate(utcIsoString, timeZoneId) {
     if (!utcIsoString) return 'N/A';
     try {
@@ -562,7 +511,6 @@ function formatLocalDate(utcIsoString, timeZoneId) {
     }
 }
 
-// NEW: Extract Time only (using API timezone)
 function formatLocalTime(utcIsoString, timeZoneId) {
     if (!utcIsoString) return 'N/A';
     try {
@@ -590,7 +538,6 @@ function formatLocalTime(utcIsoString, timeZoneId) {
     }
 }
 
-// Converts decimal RA hours → "5h 50m 24s"
 function formatRA(decimalHours) {
     const h = Math.floor(decimalHours);
     const mFull = (decimalHours - h) * 60;
@@ -599,7 +546,6 @@ function formatRA(decimalHours) {
     return `${h}h ${String(m).padStart(2,'0')}m ${String(s).padStart(2,'0')}s`;
 }
 
-// Converts decimal Dec degrees → "+/-23° 24' 00""
 function formatDec(decimalDeg) {
     const sign = decimalDeg < 0 ? '-' : '+';
     const abs = Math.abs(decimalDeg);
@@ -610,10 +556,8 @@ function formatDec(decimalDeg) {
     return `${sign}${d}° ${String(m).padStart(2,'0')}' ${String(s).padStart(2,'0')}"`;
 }
 
-// --- Geolocation ---
-
 function handleUseMyLocation() {
-    spotErrorDiv.textContent = ''; // Clear previous errors
+    spotErrorDiv.textContent = '';
     if (!navigator.geolocation) {
         spotErrorDiv.textContent = 'Geolocation is not supported by your browser.';
         return;
@@ -623,14 +567,14 @@ function handleUseMyLocation() {
 
     navigator.geolocation.getCurrentPosition(
         (position) => {
-            const lat = position.coords.latitude.toFixed(4); // Use 4 decimal places for precision
+            const lat = position.coords.latitude.toFixed(4);
             const lon = position.coords.longitude.toFixed(4);
-            spotLocationInput.value = `${lat},${lon}`; // Put coords in the input box
+            spotLocationInput.value = `${lat},${lon}`;
             passesResultsDiv.innerHTML = '<p>Location found! Fetching passes...</p>';
-            fetchAndDisplayPasses(`${lat},${lon}`); // Automatically fetch passes
+            fetchAndDisplayPasses(`${lat},${lon}`);
         },
         (error) => {
-            passesResultsDiv.innerHTML = ''; // Clear message
+            passesResultsDiv.innerHTML = '';
             switch(error.code) {
                 case error.PERMISSION_DENIED:
                     spotErrorDiv.textContent = "User denied the request for Geolocation.";
@@ -646,15 +590,13 @@ function handleUseMyLocation() {
                     break;
             }
         },
-        { // Options for geolocation
-            enableHighAccuracy: false, // Can set to true for potentially more accuracy, but uses more power
-            timeout: 10000, // Time (in ms) before timeout
-            maximumAge: 0 // Force fresh location data
+        {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 0
         }
     );
 }
-
-// --- API Call and Display Logic ---
 
 async function fetchAndDisplayPasses(locationQuery) {
     passesResultsDiv.innerHTML = '';
@@ -686,23 +628,19 @@ async function fetchAndDisplayPasses(locationQuery) {
     try {
         const response = await fetch(apiUrl);
 
-        // More robust error handling
         if (!response.ok) {
             let errorMsg = `HTTP error! Status: ${response.status}`;
             try {
-                const errorData = await response.json(); // Try to get error message from API
+                const errorData = await response.json();
                 errorMsg = errorData.error || errorMsg;
             } catch (e) {
-                // If response is not JSON, use the status text
                 errorMsg = response.statusText || errorMsg;
             }
-             // Specific message for 404
             if (response.status === 404) {
-                 errorMsg = "Location not found by the server. Please check the spelling or try coordinates.";
+                errorMsg = "Location not found by the server. Please check the spelling or try coordinates.";
             }
-             // Specific message for 503
             if (response.status === 503) {
-                 errorMsg = "The location service is temporarily busy. Please try again in a few moments.";
+                errorMsg = "The location service is temporarily busy. Please try again in a few moments.";
             }
             throw new Error(errorMsg);
         }
@@ -716,7 +654,7 @@ async function fetchAndDisplayPasses(locationQuery) {
 
     } catch (error) {
         console.error('Error fetching or displaying passes:', error);
-        passesResultsDiv.innerHTML = ''; // Clear loading message
+        passesResultsDiv.innerHTML = '';
         spotErrorDiv.textContent = `Error: ${error.message}`;
     } finally {
         spotStationSection.classList.remove('is-glowing');
@@ -724,7 +662,7 @@ async function fetchAndDisplayPasses(locationQuery) {
 }
 
 function displayPassResults(passes, locationQuery = '', locationLabel = null) {
-    passesResultsDiv.innerHTML = ''; // Clear previous results or loading message
+    passesResultsDiv.innerHTML = '';
 
     if (!Array.isArray(passes)) {
         console.error("Invalid data received from API:", passes);
@@ -748,21 +686,16 @@ function displayPassResults(passes, locationQuery = '', locationLabel = null) {
         return;
     }
 
-    // Loop through each pass and create a table for it
     passes.forEach(pass => {
-        // --- NEW: Get the timezone ID sent by the backend ---
         const tz = pass.timezone_id; 
 
         const table = document.createElement('table');
         table.className = 'pass-table-new';
 
-        // --- Table Caption ---
         const caption = table.createCaption();
-        // Pass 'tz' to the date formatter
         caption.textContent = `Sighting on: ${formatLocalDate(pass.rise_time_utc, tz)}`;
 
         const thead = table.createTHead();
-        // ... (Keep header row code exactly as is) ...
         const headerRow = thead.insertRow();
         headerRow.insertCell().textContent = "";
         headerRow.insertCell().textContent = "Time";
@@ -770,25 +703,25 @@ function displayPassResults(passes, locationQuery = '', locationLabel = null) {
 
         const tbody = table.createTBody();
 
-        // --- Rise Row ---
+        // Rise Row
         const riseRow = tbody.insertRow();
         riseRow.insertCell().textContent = 'Rise';
-        riseRow.insertCell().textContent = formatLocalTime(pass.rise_time_utc, tz); // <--- Pass 'tz'
+        riseRow.insertCell().textContent = formatLocalTime(pass.rise_time_utc, tz);
         riseRow.insertCell().textContent = degreesToCardinal16(pass.rise_azimuth);
 
-        // --- Max Height Row ---
+        // Max Height Row
         const maxRow = tbody.insertRow();
         maxRow.insertCell().textContent = `Max Height (${pass.max_elevation?.toFixed(1)}°)`;
-        maxRow.insertCell().textContent = formatLocalTime(pass.max_time_utc, tz); // <--- Pass 'tz'
+        maxRow.insertCell().textContent = formatLocalTime(pass.max_time_utc, tz);
         maxRow.insertCell().textContent = degreesToCardinal16(pass.max_azimuth);
 
-        // --- Set Row ---
+        // Set Row
         const setRow = tbody.insertRow();
         setRow.insertCell().textContent = 'Set';
-        setRow.insertCell().textContent = formatLocalTime(pass.set_time_utc, tz); // <--- Pass 'tz'
+        setRow.insertCell().textContent = formatLocalTime(pass.set_time_utc, tz);
         setRow.insertCell().textContent = degreesToCardinal16(pass.set_azimuth);
 
-        // ... (Keep duration row code exactly as is) ...
+        // duration row
         const durationRow = tbody.insertRow();
         durationRow.insertCell().textContent = 'Duration';
         const durationCell = durationRow.insertCell();
@@ -801,7 +734,7 @@ function displayPassResults(passes, locationQuery = '', locationLabel = null) {
 }
 
 
-// --- Event Listeners ---
+// Event Listeners
 findPassesBtn.addEventListener('click', () => {
     const locationValue = spotLocationInput.value.trim();
     if (!locationValue) {
@@ -813,21 +746,16 @@ findPassesBtn.addEventListener('click', () => {
 
 useLocationBtn.addEventListener('click', handleUseMyLocation);
 
-// Optional: Allow pressing Enter in the input field
 spotLocationInput.addEventListener('keypress', (event) => {
     if (event.key === 'Enter') {
         findPassesBtn.click();
     }
 });
 
-// --- END: Spot the Station Feature ---
 
-// --- START: Theme Toggle Logic (Background Image) ---
-
+// Theme Toggle Logic
 const themeToggle = document.getElementById('dark-mode-toggle');
 const bodyElement = document.body;
-
-// Safe storage: falls back to memory if localStorage is blocked
 const storage = (() => {
     try {
         localStorage.setItem('_test', '1');
@@ -842,7 +770,6 @@ const storage = (() => {
     }
 })();
 
-// Function to set the theme
 function setTheme(theme) {
     bodyElement.classList.remove('light-mode', 'dark-mode');
     const iconSun = document.getElementById('icon-sun');
@@ -878,7 +805,6 @@ function setTheme(theme) {
     }
 }
 
-// Event listener for the button
 themeToggle.addEventListener('click', () => {
     if (bodyElement.classList.contains('dark-mode')) {
         setTheme('light');
@@ -887,7 +813,6 @@ themeToggle.addEventListener('click', () => {
     }
 });
 
-// Check for saved preference on page load
 const savedTheme = storage.getItem('theme');
 if (savedTheme) {
     setTheme(savedTheme);
@@ -899,8 +824,6 @@ if (savedTheme) {
          setTheme('light');
     }
 }
-
-// --- END: Theme Toggle Logic (Background Image) ---
 
 // Update UTC time clock
 function updateUTCClock() {
@@ -919,42 +842,40 @@ setInterval(updateUTCClock, 1000);
 // Call it immediately to show time right away
 updateUTCClock();
 
-// --- START: Pin Mode Feature Logic ---
+function togglePinMode(e) {
+    
+    if (e && e.stopPropagation) {
+        e.stopPropagation();
+    }
 
-function togglePinMode() {
-    isPinModeActive = !isPinModeActive; // Flip the mode on/off
-    const pinTooltip = document.getElementById('pin-tooltip'); // Get the tooltip span
+    isPinModeActive = !isPinModeActive;
+    const pinTooltip = document.getElementById('pin-tooltip');
 
     if (isPinModeActive) {
-        // --- ENTERING PIN MODE ---
         isAutoCenterDisabled = true;
         pinModeToggle.classList.add('active');
-        
-        // Update the TOOLTIP text, not the button text!
-        pinTooltip.textContent = 'Click on path to know arrival time (Active)'; 
-        
+        pinTooltip.textContent = 'Click on path to know arrival time'; 
         map.getContainer().style.cursor = 'crosshair';
+        
+        pinTooltip.classList.add('force-show');
 
-        // Remove old pin if it exists
         if (pinMarker) {
             map.removeLayer(pinMarker);
             pinMarker = null;
         }
 
     } else {
-        // --- EXITING PIN MODE ---
         pinModeToggle.classList.remove('active');
-        
-        // Reset the TOOLTIP text
         pinTooltip.textContent = 'Click on path to know arrival time'; 
-        
         map.getContainer().style.cursor = '';
+
+        pinTooltip.classList.remove('force-show');
 
         isAutoCenterDisabled = autoCenterManualoff;
     }
 }
 
-// --- REBUILT: Pin Mode Click Logic (Handles new Date object) ---
+// Pin Mode Click Logic
 function onMapClick(e) {
     if (!isPinModeActive) {
         return;
@@ -964,22 +885,17 @@ function onMapClick(e) {
     const clickedLon = e.latlng.lng;
     const distanceLimitKm = 20;
 
-    // 1. Check if the click is valid (near the future path)
     if (isPointNearOrbit(clickedLat, clickedLon, distanceLimitKm)) {
         
-        // 2. Run the calculation to get the pass time (returns a Date object or string)
         const passResult = calculateTimeToNearest(clickedLat, clickedLon);
 
         let popupContent = "";
 
-        // 3. Check what kind of result we got
         if (passResult && passResult.time instanceof Date) {
         
-        // Format time strings using the helpers
         const countdownStr = formatCountdown(passResult.time);
         const utcTimeStr = formatUTCPassTime(passResult.time);
 
-        // Build the popup string with the arrival time and closest distance
         popupContent = `
             <b>Arrives in:</b> ${countdownStr}<br>
             <b>UTC Time:</b> ${utcTimeStr}<br>
@@ -991,12 +907,10 @@ function onMapClick(e) {
         popupContent = `<b>Could not calculate arrival time.</b>`;
         }
 
-        // 4. Create the pin and popup
         if (pinMarker) {
              map.removeLayer(pinMarker);
         }
         
-        // 5. Exit pin mode automatically
         togglePinMode();
 
         pinMarker = L.marker([clickedLat, clickedLon]).addTo(map)
@@ -1004,12 +918,10 @@ function onMapClick(e) {
             .openPopup();
 
     } else {
-        // Click was invalid (too far from path)
         console.log("Invalid pin drop: too far from orbit path.");
     }
 }
 
-// Attach the listeners
 pinModeToggle.addEventListener('click', togglePinMode);
 map.on('click', onMapClick);
 
@@ -1023,75 +935,81 @@ map.on('popupclose', () => {
     isAutoCenterDisabled = autoCenterManualoff;
 });
 
-// --- END: Pin Mode Feature Logic ---
+let interactionTimeout;
 
-// --- START: Custom Map Layers Toggle Logic ---
+map.on('dragstart', () => {
+    isAutoCenterDisabled = true;
+    clearTimeout(interactionTimeout);
+});
+
+map.on('dragend', () => {
+    interactionTimeout = setTimeout(() => {
+        if (!autoCenterManualoff && !isPinModeActive) {
+            isAutoCenterDisabled = false;
+        }
+    }, 4000); 
+});
 
 const layersToggle = document.getElementById('layers-toggle');
 const layersPopover = document.getElementById('layers-popover');
 const layerButtons = layersPopover.querySelectorAll('.popover-btn');
 
-// Toggle the popover when clicking the button
 layersToggle.addEventListener('click', (e) => {
     e.stopPropagation();
     layersPopover.classList.toggle('hidden');
     overlaysPopover.classList.add('hidden');
 });
 
-// Close the popover if user clicks anywhere else on the page
 document.addEventListener('click', (e) => {
     if (!layersToggle.contains(e.target) && !layersPopover.contains(e.target)) {
         layersPopover.classList.add('hidden');
     }
 });
 
-// Handle clicking a layer option
 layerButtons.forEach(btn => {
     btn.addEventListener('click', () => {
-        // 1. Visually update the menu
         layerButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
 
-        // 2. Get the requested map layer
         const selectedLayerName = btn.getAttribute('data-layer');
         const selectedLayer = baseMaps[selectedLayerName];
 
-        // 3. Remove ALL existing tile layers from the map
         map.eachLayer((layer) => {
             if (layer instanceof L.TileLayer) {
                 map.removeLayer(layer);
             }
         });
 
-        // 4. Add the newly selected layer
         selectedLayer.addTo(map);
         
-        // 5. Close the menu
         layersPopover.classList.add('hidden');
     });
 });
-// --- END: Custom Map Layers Toggle Logic ---
-
-// --- START: Overlays Visibility Toggle Logic (Crash-Proof) ---
 
 const overlaysToggle = document.getElementById('overlays-toggle');
 const overlayButtons = overlaysPopover.querySelectorAll('.popover-btn');
 
-// Toggle the popover when clicking the Eye button
+document.addEventListener('click', (e) => {
+    const pinTooltip = document.getElementById('pin-tooltip');
+    const pinModeToggleBtn = document.getElementById('pin-mode-toggle');
+    
+    if (pinTooltip && pinModeToggleBtn && !pinModeToggleBtn.contains(e.target)) {
+        pinTooltip.classList.remove('force-show');
+    }
+});
+
 overlaysToggle.addEventListener('click', (e) => {
     e.stopPropagation(); 
     overlaysPopover.classList.toggle('hidden');
     layersPopover.classList.add('hidden');
 });
 
-// Close the popover if user clicks outside
 document.addEventListener('click', (e) => {
     if (!overlaysToggle.contains(e.target) && !overlaysPopover.contains(e.target)) {
         overlaysPopover.classList.add('hidden');
     }
 });
 
-// Handle clicking an overlay toggle
 overlayButtons.forEach(btn => {
     btn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -1101,7 +1019,6 @@ overlayButtons.forEach(btn => {
         const isActive = btn.classList.contains('active');
 
         try {
-            // 1. Handle Merged Orbit Path
             if (overlayType === 'path') {
                 if (isActive) {
                     if (!map.hasLayer(futurePathLayer)) map.addLayer(futurePathLayer);
@@ -1112,7 +1029,6 @@ overlayButtons.forEach(btn => {
                 }
             } 
             
-            // 2. Handle Footprint Circle
             else if (overlayType === 'footprint') {
                 if (isActive) {
                     if (!map.hasLayer(footprintCircle)) map.addLayer(footprintCircle);
@@ -1121,7 +1037,6 @@ overlayButtons.forEach(btn => {
                 }
             } 
             
-            // 3. Handle the Legend Control
             else if (overlayType === 'legend') {
                 if (isActive) {
                     map.addControl(legend);
@@ -1130,13 +1045,10 @@ overlayButtons.forEach(btn => {
                 }
             }
 
-            // 4. Handle Crosshair Mode
             else if (overlayType === 'crosshair') {
                 if (isActive) {
-                    // Simply swap to the precision SVG
                     marker.setIcon(crosshairIcon);
                 } else {
-                    // Swap back to the standard ISS image
                     marker.setIcon(issIcon);
                 }
             }
@@ -1153,4 +1065,3 @@ overlayButtons.forEach(btn => {
         }
     });
 });
-// --- END: Overlays Visibility Toggle Logic ---
